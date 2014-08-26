@@ -12,7 +12,7 @@ The latest updates should always be found here as well as on the EMC community s
 Version
 ----
 
-0.1
+0.2
 
 cmdlets
 -----------
@@ -20,12 +20,47 @@ cmdlets
 More cmdlets will be added as the versions progress. The current published cmdlets are:
 
 * Connect-RPAppliance
+* Disable-RPImageAccess
 * Disconnect-RPAppliance
+* Enable-RPImageAccess
+* Get-RPAccount
+* Get-RPAlertSetting
+* Get-RPCluster
+* Get-RPConfiguration
 * Get-RPGroup
+* Get-RPGroupCopy
+* Get-RPGroupCopyPolicy
+* Get-RPGroupLink
 * Get-RPGroupReplicationSet
 * Get-RPGroupReplicationSetVolume
-* Get-RPGroupState
-* Get-RPRest
+* Get-RPGroupSet
+* Get-RPGroupUID
+* Get-RPImage
+* Get-RPImageAccess
+* Get-RPLDAPSetting
+* Get-RPLicense
+* Get-RPMiscSetting
+* Get-RPReportSetting
+* Get-RPRole
+* Get-RPSNMPSetting
+* Get-RPUser
+* Invoke-RPRestGet
+* Invoke-RPRestPost
+* New-RPBookmark
+* Remove-RPConfiguration
+* Set-RPConfiguration
+
+
+Changelog
+--------------
+v0.2:
+* fixed several bugs, including running get-rpgroup with a filtered parameter would overwrite the global $rproups.
+* changed several cmdlets names to be canonical with PowerShell
+* get-rpgroup is now get-rpgroupuid. get-rpgroup gets more information about the CG
+* set the default connect-rpappliance to not ignore SSL cert
+* added several more cmdlets
+
+v0.1: initial commit
 
 Installation
 --------------
