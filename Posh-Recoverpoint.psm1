@@ -1435,6 +1435,11 @@ function Get-Image{
    Required. The name of the RP consistency group copy name to be filtered on.
 #>  
 }#End Function
+
+
+
+
+
 function Get-ImageAccess{
     [CmdletBinding()]
     Param(
@@ -1461,31 +1466,43 @@ function Get-ImageAccess{
         foreach ($CG in $CGs){
             try {
                 $CGUID = $CG.CGUID
-                $resource = "/settings/groups/$($CGUID)/full"
-                $cgsettings = Invoke-RestGet $resource
+                $resource = "/state/groups/$($CGUID)"
+                $cgstates = Invoke-RestGet $resource
             } catch {
                 Write-Host ("Error """ + $Error[0] + """ Connecting to `"$resource`"")
                 break; 
             }
-            $cgcopysets = @($cgsettings | select -ExpandProperty groupCopiesSettings | where {$_.imageAccessInformation -ne $null})
-            foreach ($cgcopyset in $cgcopysets){
-                $imageAccessInformation = $cgcopyset | select -ExpandProperty imageAccessInformation
+            $cgcopystates = @($cgstates | select -ExpandProperty groupCopiesState | where {$_.storageAccessState -ne "DirectAccess"})
+            foreach ($cgcopystate in $cgcopystates){
+                $imageAccessInformation = $cgcopystate.imageAccessInformation
                 $imageInformation = $imageAccessInformation | select -ExpandProperty imageInformation
+                $accessedimage = $cgcopystate.accessedImage
+                $snapshotUID = ($accessedimage | select -ExpandProperty snapshotUID).id
+                if ($snapshotUID){
+                    $imageAccessEnabled = $True
+                    if ($accessedimage.userSnapshot){
+                        $imagetype = "UserSnapshot"
+                    } else {
+                        $imagetype = "unknown"
+                    }
+                } else {
+                    $imageAccessEnabled = $False
+                    $imagetype = $null
+                }
+                
+                $groupcopies = $accessedimage | select -ExpandProperty relevantEvent | select -ExpandProperty groupCopies
                 $resultobj = to-customobject -TypeName MyCustomType ([ordered]@{
                     CGName                    = $CG.CGName
                     CGUID                     = $CGUID
-                    ClusterName               = ($script:rpclusters | where {$_.clusterUID -eq ($cgcopyset | select -ExpandProperty copyUID | select -ExpandProperty globalCopyUID | select -ExpandProperty clusterUID).id}).clusterName
-                    ClusterUID                = ($cgcopyset | select -ExpandProperty copyUID | select -ExpandProperty globalCopyUID | select -ExpandProperty clusterUID).id
-                    CGCopyName                = $cgcopyset.name
-                    CGCopyUID                 = $cgcopyset | select -ExpandProperty copyUID | select -ExpandProperty globalCopyUID | select -ExpandProperty copyUID
-                    imageAccessEnabled        = $imageAccessInformation.imageAccessEnabled
-                    timeStamp                 = to-date ($imageInformation.timeStamp).timeInMicroSeconds
-                    mode                      = $imageInformation.mode
-                    imageType                 = $imageInformation.imageType
-                    searchText                = $imageInformation.searchText
-                    searchExactText           = $imageInformation.searchExactText
-                    maximumSearchRange        = $imageInformation.maximumSearchRange
-                    imageName                 = $imageAccessInformation.imageName
+                    ClusterName               = ($script:rpclusters | where {$_.clusterUID -eq ($cgcopystate | select -ExpandProperty copyUID | select -ExpandProperty globalCopyUID | select -ExpandProperty clusterUID).id}).clusterName
+                    ClusterUID                = ($groupcopies | select -ExpandProperty CopyUID | select -ExpandProperty globalCopyUID | select -ExpandProperty clusterUID).id
+                    CGCopyName                = $groupcopies.copyName
+                    CGCopyUID                 = ($groupcopies | select -ExpandProperty CopyUID | select -ExpandProperty globalCopyUID).copyUID
+                    imageAccessEnabled        = $imageAccessEnabled
+                    timeStamp                 = to-date ($accessedimage | select -ExpandProperty closingTimeStamp).timeInMicroSeconds
+                    mode                      = $cgcopystate.storageAccessState
+                    imageType                 = $imagetype
+                    imageName                 = $accessedimage.description
                     scenario                  = $imageAccessInformation.scenario
                 }) -DefaultProperty CGName,ClusterName,CGCopyName,imageAccessEnabled,mode,imageName,scenario
                 $results += $resultobj | where {$_.CGName -like $CGName -and $_.ClusterName -like $ClusterName}
@@ -1519,6 +1536,15 @@ function Get-ImageAccess{
    Optional. The name of the RP Cluster to be filtered on.
 #>  
 }#End Function
+
+
+
+
+
+
+
+
+
 function Get-LDAPSetting {
     begin {
         $results = @()

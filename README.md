@@ -53,6 +53,9 @@ More cmdlets will be added as the versions progress. The current published cmdle
 
 Changelog
 --------------
+v0.2a:
+* Changed Get-RPImageAccess to use /state/ instead of /settings/. The latter was misreporting state when in an "EnablingLoggedAccess" as "EnabledLoggedAccess". Dropped the following properties from Get-RPImageAccess: searchText,searchExactText,maximumSearchRange. 
+
 v0.2:
 * fixed several bugs, including running get-rpgroup with a filtered parameter would overwrite the global $rproups.
 * changed several cmdlets names to be canonical with PowerShell
