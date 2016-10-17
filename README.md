@@ -1,6 +1,8 @@
 Posh-RecoverPoint
 =========
 
+NOTE: Unfortunately, we no longer have RecoverPoint in our environment so I am no longer able to maintain this project. I hope you are able to use it as a good starting point for managing your RP environment.
+
 PowerShell v4.0 or higher module for interacting with the EMC RecoverPoint 4.0 REST API
 
 With RecoverPoint 4.0, I decided to throw away my plink xml wrappers and re-write my cmdlets using the native REST API. In an effort to support the community, I thought I would share my progress here. Feel free to use the modules and provide any feedback in this thread. I will try to reply back in a short amount of time.
